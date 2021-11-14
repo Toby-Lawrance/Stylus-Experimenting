@@ -1,0 +1,29 @@
+﻿<Window x:Class="PenGestures.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PenGestures"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="800" Width="800">
+    <Grid Name="Container">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <InkCanvas Grid.Row="1" Name="DrawingCanvas" 
+                   StylusInAirMove="UIElement_OnStylusInAirMove" 
+                   StylusMove="UIElement_OnStylusMove" 
+                   LostStylusCapture="DrawingCanvas_OnLostStylusCapture" 
+                   GotStylusCapture="DrawingCanvas_OnGotStylusCapture"
+                   StrokeCollected="DrawingCanvas_OnStrokeCollected">
+        </InkCanvas>
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Background="Beige">
+            <Button Name="PauseButton" Content="Pause" HorizontalAlignment="Left" Click="PauseButton_OnClick"/>
+            <Button Name="ToggleButton" Content="Toggle" HorizontalAlignment="Left" Click="ToggleButton_OnClick"/>
+            <Button Name="ColourRandomise" Content="Randomise" HorizontalAlignment="Left" Click="ColourRandomise_OnClick"/>
+            <Button Name="Straighten" Content="Straighten" HorizontalAlignment="Left" Click="Straighten_OnClick"/>
+        </StackPanel>
+    </Grid>
+    
+</Window>
