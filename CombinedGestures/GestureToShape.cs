@@ -23,7 +23,7 @@ namespace CombinedGestures
                 { ApplicationGesture.Right , DrawRight},
                 { ApplicationGesture.Square , DrawSquare},
                 { ApplicationGesture.Star , DrawStar},
-                // { ApplicationGesture.Tap , DrawTap},
+                { ApplicationGesture.Tap , DrawTap},
                 { ApplicationGesture.Triangle , DrawTriangle},
                 // { ApplicationGesture.ChevronDown , DrawChevronDown},
                 // { ApplicationGesture.ChevronUp , DrawChevronUp},
@@ -228,9 +228,18 @@ namespace CombinedGestures
             return canvas;
         }
         
-        private static FrameworkElement DrawTap()
+        private static FrameworkElement DrawTap(Point center, double totalWidth, double totalHeight)
         {
-            throw new NotImplementedException();
+            var canvas = GetBaseContainer<Canvas>(totalWidth,totalHeight);
+            var dot = new Ellipse();
+            dot.Fill = _gestureBrush;
+            dot.Width = _strokeWidth;
+            dot.Height = _strokeWidth;
+
+            canvas.Children.Add(dot);
+            canvas = SetElementCenterPositionOnInkCanvas(canvas, center.X, center.Y);
+
+            return canvas;
         }
         
         private static FrameworkElement DrawTriangle(Point center, double totalWidth, double totalHeight)
