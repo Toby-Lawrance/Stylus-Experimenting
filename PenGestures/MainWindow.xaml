@@ -12,17 +12,18 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <InkCanvas Grid.Row="1" Name="DrawingCanvas" 
+                   EditingMode="GestureOnly"
                    StylusInAirMove="UIElement_OnStylusInAirMove" 
                    StylusMove="UIElement_OnStylusMove" 
                    LostStylusCapture="DrawingCanvas_OnLostStylusCapture" 
                    GotStylusCapture="DrawingCanvas_OnGotStylusCapture"
-                   StrokeCollected="DrawingCanvas_OnStrokeCollected">
+                   StrokeCollected="DrawingCanvas_OnStrokeCollected"
+                   Gesture="DrawingCanvas_OnGesture">
         </InkCanvas>
         <StackPanel Orientation="Horizontal" Grid.Row="0" Background="Beige">
             <Button Name="PauseButton" Content="Pause" HorizontalAlignment="Left" Click="PauseButton_OnClick"/>
             <Button Name="ToggleButton" Content="Toggle" HorizontalAlignment="Left" Click="ToggleButton_OnClick"/>
             <Button Name="ColourRandomise" Content="Randomise" HorizontalAlignment="Left" Click="ColourRandomise_OnClick"/>
-            <Button Name="Straighten" Content="Straighten" HorizontalAlignment="Left" Click="Straighten_OnClick"/>
         </StackPanel>
     </Grid>
     

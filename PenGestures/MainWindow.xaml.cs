@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -37,6 +38,8 @@ namespace PenGestures
             hoverMarker.Width = 25;
             InkCanvas.SetLeft(hoverMarker,e.GetPosition(DrawingCanvas).X - (hoverMarker.Width/2.0));
             InkCanvas.SetTop(hoverMarker,e.GetPosition(DrawingCanvas).Y - (hoverMarker.Height/2.0));
+
+            var device = e.StylusDevice.TabletDevice;
         }
 
         private void UIElement_OnStylusMove(object sender, StylusEventArgs e)
@@ -66,13 +69,13 @@ namespace PenGestures
 
         private void ToggleButton_OnClick(object sender, RoutedEventArgs e)
         {
-            if (DrawingCanvas.EditingMode == InkCanvasEditingMode.Ink)
+            if (DrawingCanvas.EditingMode == InkCanvasEditingMode.GestureOnly)
             {
                 DrawingCanvas.EditingMode = InkCanvasEditingMode.Select;
             }
             else
             {
-                DrawingCanvas.EditingMode = InkCanvasEditingMode.Ink;
+                DrawingCanvas.EditingMode = InkCanvasEditingMode.GestureOnly;
             }
         }
 
@@ -124,30 +127,29 @@ namespace PenGestures
             var xs = stroke.StylusPoints.Select(p => p.X).ToArray();
             var ys = stroke.StylusPoints.Select(p => p.Y).ToArray();
 
-            var (intercept,slope) = Fit.Line(xs, ys);
-            Func<double,double> lineFuncXY = (x) => slope * x + intercept;
-            Func<double, double> lineFuncYX = (y) => (y - intercept) / slope;
-            
-            var rSquaredValueX = GoodnessOfFit.RSquared(stroke.StylusPoints.Select(p => lineFuncXY(p.X)),
-                stroke.StylusPoints.Select(p => p.Y));
-            
-            var rSquaredValueY = GoodnessOfFit.RSquared(stroke.StylusPoints.Select(p => lineFuncYX(p.Y)),
-                stroke.StylusPoints.Select(p => p.X));
+            var startPoint = stroke.StylusPoints.First();
+            var endPoint = stroke.StylusPoints.Last();
 
-            var rSquaredValue = Math.Max(rSquaredValueX, rSquaredValueY);
+            var gradient = Math.Abs(endPoint.Y - startPoint.Y) / Math.Abs(endPoint.X - startPoint.X);
+            var intercept = endPoint.Y - gradient * endPoint.X;
+            
+            Func<double,double> lineFunc = (x) => gradient * x + intercept;
+
+            var rSquaredValue = GoodnessOfFit.RSquared(stroke.StylusPoints.Select(p => lineFunc(p.X)),
+                stroke.StylusPoints.Select(p => p.Y));
             
             var bounding = stroke.GetBounds();
             var l = new Line
             {
-                X1 = bounding.Left,
-                X2 = bounding.Right
+                X1 = startPoint.X,
+                X2 = endPoint.X,
+                Y1 = startPoint.Y,
+                Y2 = endPoint.Y
             };
-            
+
             var red = rSquaredValue <= 0.5 ? 1.0 : Math.Clamp(rSquaredValue * -2.0 + 2.0,0.0,1.0);
             var green = rSquaredValue >= 0.5 ? 1.0 : Math.Clamp(rSquaredValue * 2.0,0.0,1.0);
             var col = Color.FromRgb((byte)(red * 255), (byte)(green * 255), 0);
-            l.Y1 = lineFuncXY(l.X1);
-            l.Y2 = lineFuncXY(l.X2);
             l.Stroke = new SolidColorBrush(col);
             l.StrokeThickness = 5.0;
             l.Clip = new RectangleGeometry(bounding);
@@ -157,6 +159,19 @@ namespace PenGestures
             InkCanvas.SetLeft(t,l.X2);
             InkCanvas.SetTop(t,l.Y2);
             DrawingCanvas.Children.Add(t);
+        }
+
+        private void DrawingCanvas_OnGesture(object sender, InkCanvasGestureEventArgs e)
+        {
+            var possibleGestures = e.GetGestureRecognitionResults().OrderBy(grr => grr.RecognitionConfidence);
+
+            var strongGestures = possibleGestures.Where(grr => grr.RecognitionConfidence == RecognitionConfidence.Strong);
+            
+            if (strongGestures.FirstOrDefault(grr => grr.ApplicationGesture == ApplicationGesture.Star) is not null)
+            {
+                DrawingCanvas.Strokes.Add(e.Strokes);
+                ColourRandomise_OnClick(null,null);
+            }
         }
     }
 }
