@@ -10,12 +10,17 @@ using Point = System.Windows.Point;
 
 namespace CombinedGestures
 {
-    public static class GestureToShape
+    public class GestureToShape
     {
-        private static readonly Dictionary<ApplicationGesture, Func<Point,double,double,FrameworkElement>> MethodList =
-            new()
+        private readonly Dictionary<ApplicationGesture, Func<Point, double, double, FrameworkElement>> MethodList;
+
+        private Brush _gestureBrush = Brushes.LightGray;
+
+        public GestureToShape()
+        {
+            MethodList =
+            new Dictionary<ApplicationGesture, Func<Point, double, double, FrameworkElement>>
             {
-                // { ApplicationGesture.Check , DrawCheck},
                 { ApplicationGesture.Circle , DrawCircle},
                 { ApplicationGesture.Down , DrawDown},
                 { ApplicationGesture.Up , DrawUp},
@@ -25,15 +30,14 @@ namespace CombinedGestures
                 { ApplicationGesture.Star , DrawStar},
                 { ApplicationGesture.Tap , DrawTap},
                 { ApplicationGesture.Triangle , DrawTriangle},
-                // { ApplicationGesture.ChevronDown , DrawChevronDown},
-                // { ApplicationGesture.ChevronUp , DrawChevronUp},
-                // { ApplicationGesture.ChevronLeft , DrawChevronLeft},
-                // { ApplicationGesture.ChevronRight , DrawChevronRight},
+                { ApplicationGesture.ChevronDown , DrawChevronDown},
+                { ApplicationGesture.ChevronUp , DrawChevronUp},
+                { ApplicationGesture.ChevronLeft , DrawChevronLeft},
+                { ApplicationGesture.ChevronRight , DrawChevronRight},
             };
-
-        private static Brush _gestureBrush = Brushes.LightGray;
+        }
         
-        public static void SetGestureBrush(Brush col)
+        public void SetGestureBrush(Brush col)
         {
             if (col is not null)
             {
@@ -41,9 +45,9 @@ namespace CombinedGestures
             }
         }
 
-        private static double _strokeWidth = 3.0;
+        private double _strokeWidth = 3.0;
 
-        public static void SetGestureStrokeWidth(double val)
+        public  void SetGestureStrokeWidth(double val)
         {
             if (val > 0.0)
             {
@@ -51,12 +55,12 @@ namespace CombinedGestures
             }
         }
         
-        public static FrameworkElement DrawGesture(ApplicationGesture gesture, Point center, double totalWidth, double totalHeight)
+        public  FrameworkElement DrawGesture(ApplicationGesture gesture, Point center, double totalWidth, double totalHeight)
         {
             return !MethodList.ContainsKey(gesture) ? null : MethodList[gesture](center,totalWidth,totalHeight);
         }
         
-        private static T SetElementCenterPositionOnInkCanvas<T>(T element,double x, double y)
+        private  T SetElementCenterPositionOnInkCanvas<T>(T element,double x, double y)
             where T : FrameworkElement
         {
             InkCanvas.SetTop(element, y - (element.Height/2.0));
@@ -64,7 +68,7 @@ namespace CombinedGestures
             return element;
         }
 
-        private static T GetBaseContainer<T>(double width, double height)
+        private  T GetBaseContainer<T>(double width, double height)
         where T : FrameworkElement, new()
         {
             var canvas = new T()
@@ -75,7 +79,7 @@ namespace CombinedGestures
             return canvas;
         }
 
-        private static FrameworkElement DrawCircle(Point center, double totalWidth, double totalHeight)
+        private  FrameworkElement DrawCircle(Point center, double totalWidth, double totalHeight)
         {
             var canvas = GetBaseContainer<Grid>(Math.Max(totalWidth, totalHeight),Math.Max(totalWidth, totalHeight));
             var circle = new Ellipse();
@@ -91,12 +95,7 @@ namespace CombinedGestures
             return canvas;
         }
 
-        private static FrameworkElement DrawCheck(Point center, double totalWidth, double totalHeight)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static Point RotatePointAroundAnother(Point centreOfRotation, Point pointToRotate, double angle)
+        private  Point RotatePointAroundAnother(Point centreOfRotation, Point pointToRotate, double angle)
         {
             double DegToRad(double deg) => deg * Math.PI / 180.0;
             var s = Math.Sin(DegToRad(angle));
@@ -113,7 +112,7 @@ namespace CombinedGestures
             };
         }
 
-        private static FrameworkElement DrawStar(Point center, double totalWidth, double totalHeight)
+        private  FrameworkElement DrawStar(Point center, double totalWidth, double totalHeight)
         {
             var avgSize = (totalWidth + totalHeight) / 2.0;
             var canvas = GetBaseContainer<Canvas>(avgSize,avgSize);
@@ -142,7 +141,7 @@ namespace CombinedGestures
             return canvas;
         }
         
-        private static FrameworkElement DrawDown(Point center, double totalWidth, double totalHeight)
+        private  FrameworkElement DrawDown(Point center, double totalWidth, double totalHeight)
         {
             var canvas = GetBaseContainer<Grid>(totalWidth,totalHeight);
             var line = new Rectangle();
@@ -159,7 +158,7 @@ namespace CombinedGestures
             return canvas;
         }
         
-        private static FrameworkElement DrawUp(Point center, double totalWidth, double totalHeight)
+        private  FrameworkElement DrawUp(Point center, double totalWidth, double totalHeight)
         {
             var canvas = GetBaseContainer<Grid>(totalWidth,totalHeight);
             var line = new Rectangle();
@@ -176,7 +175,7 @@ namespace CombinedGestures
             return canvas;
         }
         
-        private static FrameworkElement DrawLeft(Point center, double totalWidth, double totalHeight)
+        private  FrameworkElement DrawLeft(Point center, double totalWidth, double totalHeight)
         {
             var canvas = GetBaseContainer<Grid>(totalWidth,totalHeight);
             var line = new Rectangle();
@@ -193,7 +192,7 @@ namespace CombinedGestures
             return canvas;
         }
         
-        private static FrameworkElement DrawRight(Point center, double totalWidth, double totalHeight)
+        private  FrameworkElement DrawRight(Point center, double totalWidth, double totalHeight)
         {
             var canvas = GetBaseContainer<Grid>(totalWidth,totalHeight);
             var line = new Rectangle();
@@ -210,7 +209,7 @@ namespace CombinedGestures
             return canvas;
         }
         
-        private static FrameworkElement DrawSquare(Point center, double totalWidth, double totalHeight)
+        private  FrameworkElement DrawSquare(Point center, double totalWidth, double totalHeight)
         {
             var avgSize = (totalWidth + totalHeight) / 2.0;
             var canvas = GetBaseContainer<Grid>(avgSize,avgSize);
@@ -228,7 +227,7 @@ namespace CombinedGestures
             return canvas;
         }
         
-        private static FrameworkElement DrawTap(Point center, double totalWidth, double totalHeight)
+        private  FrameworkElement DrawTap(Point center, double totalWidth, double totalHeight)
         {
             var canvas = GetBaseContainer<Canvas>(totalWidth,totalHeight);
             var dot = new Ellipse();
@@ -242,7 +241,7 @@ namespace CombinedGestures
             return canvas;
         }
         
-        private static FrameworkElement DrawTriangle(Point center, double totalWidth, double totalHeight)
+        private  FrameworkElement DrawTriangle(Point center, double totalWidth, double totalHeight)
         {
             var canvas = GetBaseContainer<Canvas>(totalWidth,totalHeight);
             var triangle = new Polygon();
@@ -261,24 +260,80 @@ namespace CombinedGestures
             return canvas;
         }
 
-        private static FrameworkElement DrawChevronUp()
+        private  FrameworkElement DrawChevronUp(Point center, double totalWidth, double totalHeight)
         {
-            throw new NotImplementedException();
+            var canvas = GetBaseContainer<Canvas>(totalWidth,totalHeight);
+            var chevron = new Polyline();
+            chevron.Stroke = _gestureBrush;
+            chevron.StrokeThickness = _strokeWidth;
+            chevron.Stretch = Stretch.UniformToFill;
+            chevron.HorizontalAlignment = HorizontalAlignment.Stretch;
+            chevron.VerticalAlignment = VerticalAlignment.Stretch;
+            chevron.Fill = Brushes.Transparent;
+            chevron.Points = new PointCollection(new[] { new Point(0, canvas.Height), new Point(canvas.Width/2.0, 0), new Point(canvas.Width, canvas.Height) });
+
+            canvas.Children.Add(chevron);
+
+            canvas = SetElementCenterPositionOnInkCanvas(canvas, center.X, center.Y);
+
+            return canvas;
         }
         
-        private static FrameworkElement DrawChevronDown()
+        private  FrameworkElement DrawChevronDown(Point center, double totalWidth, double totalHeight)
         {
-            throw new NotImplementedException();
+            var canvas = GetBaseContainer<Canvas>(totalWidth,totalHeight);
+            var chevron = new Polyline();
+            chevron.Stroke = _gestureBrush;
+            chevron.StrokeThickness = _strokeWidth;
+            chevron.Stretch = Stretch.UniformToFill;
+            chevron.HorizontalAlignment = HorizontalAlignment.Stretch;
+            chevron.VerticalAlignment = VerticalAlignment.Stretch;
+            chevron.Fill = Brushes.Transparent;
+            chevron.Points = new PointCollection(new[] { new Point(0, 0), new Point(canvas.Width/2.0, canvas.Height), new Point(canvas.Width, 0) });
+
+            canvas.Children.Add(chevron);
+
+            canvas = SetElementCenterPositionOnInkCanvas(canvas, center.X, center.Y);
+
+            return canvas;
         }
         
-        private static FrameworkElement DrawChevronLeft()
+        private  FrameworkElement DrawChevronLeft(Point center, double totalWidth, double totalHeight)
         {
-            throw new NotImplementedException();
+            var canvas = GetBaseContainer<Canvas>(totalWidth,totalHeight);
+            var chevron = new Polyline();
+            chevron.Stroke = _gestureBrush;
+            chevron.StrokeThickness = _strokeWidth;
+            chevron.Stretch = Stretch.UniformToFill;
+            chevron.HorizontalAlignment = HorizontalAlignment.Stretch;
+            chevron.VerticalAlignment = VerticalAlignment.Stretch;
+            chevron.Fill = Brushes.Transparent;
+            chevron.Points = new PointCollection(new[] { new Point(canvas.Width, 0), new Point(0, canvas.Height/2.0), new Point(canvas.Width, canvas.Height) });
+
+            canvas.Children.Add(chevron);
+
+            canvas = SetElementCenterPositionOnInkCanvas(canvas, center.X, center.Y);
+
+            return canvas;
         }
         
-        private static FrameworkElement DrawChevronRight()
+        private  FrameworkElement DrawChevronRight(Point center, double totalWidth, double totalHeight)
         {
-            throw new NotImplementedException();
+            var canvas = GetBaseContainer<Canvas>(totalWidth,totalHeight);
+            var chevron = new Polyline();
+            chevron.Stroke = _gestureBrush;
+            chevron.StrokeThickness = _strokeWidth;
+            chevron.Stretch = Stretch.UniformToFill;
+            chevron.HorizontalAlignment = HorizontalAlignment.Stretch;
+            chevron.VerticalAlignment = VerticalAlignment.Stretch;
+            chevron.Fill = Brushes.Transparent;
+            chevron.Points = new PointCollection(new[] { new Point(0, 0), new Point(canvas.Width, canvas.Height/2.0), new Point(0, canvas.Height) });
+
+            canvas.Children.Add(chevron);
+
+            canvas = SetElementCenterPositionOnInkCanvas(canvas, center.X, center.Y);
+
+            return canvas;
         }
     }
 }
