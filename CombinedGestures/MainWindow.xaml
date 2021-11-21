@@ -10,6 +10,7 @@
                EditingMode="GestureOnly"
                StylusInAirMove="DrawingCanvas_OnStylusInAirMove"
                StylusMove="DrawingCanvas_OnStylusMove"
-               Gesture="DrawingCanvas_OnGesture">
+               Gesture="DrawingCanvas_OnGesture"
+               Background="Transparent">
     </InkCanvas>
 </Window>

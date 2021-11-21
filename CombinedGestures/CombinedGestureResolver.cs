@@ -27,6 +27,7 @@ namespace CombinedGestures
         {
             currentPossibilityKeys = _possibilities.Gestures.Select(kvp => kvp.Key).ToList();
             recognitionComplete = false;
+            CombinedGestureCenter = new Point();
             step = 0;
         }
 
@@ -34,7 +35,8 @@ namespace CombinedGestures
         {
             if (RecognitionComplete)
             {
-                return CurrentlyPossible.First();
+                Reset();
+                CombinedGestureCenter = gesturePosition;
             }
 
             var gestureRelativeCenter = new Point((gesturePosition - CombinedGestureCenter).X,(gesturePosition - CombinedGestureCenter).Y);

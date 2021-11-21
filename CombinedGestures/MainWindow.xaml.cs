@@ -156,78 +156,27 @@ namespace CombinedGestures
                 }
                 knownGestures.Gestures[result].completionAction();
             }
-
-            foreach (var (gesture,offset) in resolver.GetPossibleNextSteps)
+            else
             {
-                var shapeToDraw = drawer.DrawGesture(gesture,new Point(resolver.CombinedGestureCenter.X + offset.X, resolver.CombinedGestureCenter.Y + offset.Y),width,height);
-                if (shapeToDraw is null)
+                foreach (var (gesture,offset) in resolver.GetPossibleNextSteps)
                 {
-                    var redStrokes = e.Strokes.Select(stroke =>
+                    var shapeToDraw = drawer.DrawGesture(gesture,new Point(resolver.CombinedGestureCenter.X + offset.X, resolver.CombinedGestureCenter.Y + offset.Y),width,height);
+                    if (shapeToDraw is null)
                     {
-                        stroke.DrawingAttributes.Color = Colors.Red;
-                        return stroke;
-                    });
-                    DrawingCanvas.Strokes.Add(new StrokeCollection(redStrokes));
+                        var redStrokes = e.Strokes.Select(stroke =>
+                        {
+                            stroke.DrawingAttributes.Color = Colors.Red;
+                            return stroke;
+                        });
+                        DrawingCanvas.Strokes.Add(new StrokeCollection(redStrokes));
+                    }
+                    else
+                    {
+                        shapeToDraw.Tag = "temp";
+                        DrawingCanvas.Children.Add(shapeToDraw);
+                    }
                 }
-                else
-                {
-                    shapeToDraw.Tag = "temp";
-                    DrawingCanvas.Children.Add(shapeToDraw);
-                }
-            }// var shapeToDraw = GestureToShape.DrawGesture(strongestGesture.ApplicationGesture,center,width,height);
-            // if (shapeToDraw is null)
-            // {
-            //     var redStrokes = e.Strokes.Select(stroke =>
-            //     {
-            //         stroke.DrawingAttributes.Color = Colors.Red;
-            //         return stroke;
-            //     });
-            //     DrawingCanvas.Strokes.Add(new StrokeCollection(redStrokes));
-            // }
-            // else
-            // {
-            //     var circle = new Ellipse();
-            //     circle.Width = 5;
-            //     circle.Height = 5;
-            //     circle.Fill = Brushes.Blue;
-            //     circle = SetElementCenterPositionOnInkCanvas(circle, center.X,
-            //         center.Y);
-            //     DrawingCanvas.Children.Add(circle);
-            //
-            //     DrawingCanvas.Children.Add(shapeToDraw);
-            // }
-
-
-            // var allPoints = e.Strokes.SelectMany(stroke => stroke.StylusPoints).ToArray();
-            // var allX = allPoints.Select(point => point.X).ToArray();
-            // var allY = allPoints.Select(point => point.Y).ToArray();
-            // var width = allX.Max() - allX.Min();
-            // var height = allY.Max() - allY.Min();
-            // var center = new Point(allX.Min() + width / 2.0,allY.Min() + height / 2.0);
-            // var shapeToDraw = GestureToShape.DrawGesture(strongestGesture.ApplicationGesture,center,width,height);
-            // if (shapeToDraw is null)
-            // {
-            //     var redStrokes = e.Strokes.Select(stroke =>
-            //     {
-            //         stroke.DrawingAttributes.Color = Colors.Red;
-            //         return stroke;
-            //     });
-            //     DrawingCanvas.Strokes.Add(new StrokeCollection(redStrokes));
-            // }
-            // else
-            // {
-            //     var circle = new Ellipse();
-            //     circle.Width = 5;
-            //     circle.Height = 5;
-            //     circle.Fill = Brushes.Blue;
-            //     circle = SetElementCenterPositionOnInkCanvas(circle, center.X,
-            //         center.Y);
-            //     DrawingCanvas.Children.Add(circle);
-            //
-            //     DrawingCanvas.Children.Add(shapeToDraw);
-            // }
-            // CreateTextBlock(strongestGesture.ApplicationGesture.ToString(),allX.Max(),allY.Max());
-            
+            }
         }
 
         private T SetElementCenterPositionOnInkCanvas<T>(T element,double x, double y)

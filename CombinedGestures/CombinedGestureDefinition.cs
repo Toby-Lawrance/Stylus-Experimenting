@@ -13,7 +13,7 @@ namespace CombinedGestures
         public double DistanceTolerance => _distanceTolerance;
 
         public CombinedGestureDefinition(IEnumerable<(ApplicationGesture baseShape, Point centerOffset)> seq,
-            double tolerance = 5.0)
+            double tolerance = 25.0)
         {
             SequenceOfGestures = new List<(ApplicationGesture baseShape,Point centerOffset)>(seq);
             _distanceTolerance = tolerance;
