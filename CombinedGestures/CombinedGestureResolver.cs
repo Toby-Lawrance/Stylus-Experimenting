@@ -47,7 +47,8 @@ namespace CombinedGestures
                     _possibilities.GetGestureStep(possibility, step).centerOffset
                         .GetDistanceTo(gestureRelativeCenter) <=
                     _possibilities.Gestures[possibility].gesture.DistanceTolerance
-                );
+                )
+                .ToArray();
 
             foreach (var possibility in CurrentlyPossible)
             {
