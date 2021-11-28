@@ -10,34 +10,69 @@ namespace CustomShapeComparison
     public class PointSimilarityComparer : IStrokeComparer
     {
         private int samplesToTake = 1000;
+        private double difficultyFactor = 10.0;
 
         public PointSimilarityComparer()
         {
-            
         }
 
-        public PointSimilarityComparer(int samples)
+        public PointSimilarityComparer(int samples, double distributionStdDev)
         {
             samplesToTake = samples;
+            difficultyFactor = distributionStdDev;
+        }
+
+        public (Point[] baseSampled, Point[] compareSampled) GetSampledCurves(IEnumerable<Point> baseStroke,
+            IEnumerable<Point> compareStroke)
+        {
+            var baseSampled = TransformToSampled(baseStroke.ToArray()).ToArray();
+            var compareSampled = TransformToSampled(compareStroke.ToArray()).ToArray();
+
+            return (baseSampled, compareSampled);
+        }
+
+        public static IEnumerable<Point> TransformTo(Point[] stroke, Point pO)
+        {
+            var firstOfSequence = stroke.First();
+            return stroke.Select(p => new Point(p.X - firstOfSequence.X + pO.X, p.Y - firstOfSequence.Y + pO.Y));
+        }
+
+        public double Compare(IEnumerable<Point> baseStroke,
+            IEnumerable<Point> compareStroke)
+        {
+            var baseStrokeArr = baseStroke.ToArray();
+            var compareStrokeArr = compareStroke.ToArray();
+            
+            var (baseSampled, compareSampled) = GetSampledCurves(baseStrokeArr, compareStrokeArr);
+
+            baseSampled = TransformTo(baseSampled, new Point()).ToArray();
+            compareSampled = TransformTo(compareSampled, new Point()).ToArray();
+
+            var averageResult = baseSampled
+                .Zip(compareSampled, (p1, p2) => HalfNormalCDF(p1.GetDistanceTo(p2), difficultyFactor)).Average();
+
+            return 1.0 - averageResult;
+        }
+
+        private static double HalfNormalCDF(double x, double stdDev)
+        {
+            var param = x / (stdDev * Math.Sqrt(2));
+            return GaussERF(param);
         }
         
-        public (double score,IEnumerable<(Point,double distance)> sampled) Compare(IEnumerable<Point> baseStroke, IEnumerable<Point> compareStroke)
+        private static double GaussERF(double x)
         {
-            var baseSampled = TransformToSampled(baseStroke.Distinct().ToArray()).ToArray();
-            var compareSampled = TransformToSampled(compareStroke.Distinct().ToArray()).ToArray();
-
-            baseSampled = baseSampled.Select(p => new Point(p.X - baseSampled.First().X, p.Y - baseSampled.First().Y)).ToArray();
-            compareSampled = compareSampled.Select(p => new Point(p.X - compareSampled.First().X, p.Y - compareSampled.First().Y)).ToArray();
-
-            var sampleMeasured = baseSampled.Zip(compareSampled, (p1, p2) => (p2,p1.GetDistanceTo(p2))).ToArray();
-
-            return (sampleMeasured.Average(p => p.Item2),sampleMeasured);
+            var multiplier = x < 0.0 ? -1.0 : 1.0;
+            x *= multiplier;
+            double[] a = { 0.0705230784, 0.0422820123, 0.0092705272,0.0001520143,0.0002765672,0.0000430638 };
+            var denominator = 1.0 + a.Select((ai, i) => ai * Math.Pow(x, i + 1)).Sum();
+            return (1.0 - (1.0 / denominator)) * multiplier;
         }
 
         private IEnumerable<Point> TransformToSampled(Point[] points)
         {
             var totalLength = GetPathLength(points);
-            var distancePerSample = totalLength / samplesToTake;
+            var distancePerSample = totalLength / (samplesToTake - 1);
 
             var distances = Enumerable.Range(0, samplesToTake).Select(i => i * distancePerSample).ToArray();
 
@@ -49,7 +84,7 @@ namespace CustomShapeComparison
             var windowed = GetWindowedPoints(polyLine).ToArray();
 
             var cumulativeDistance = 0.0;
-            foreach (var (p1,p2) in windowed)
+            foreach (var (p1, p2) in windowed)
             {
                 var dist = p1.GetDistanceTo(p2);
                 if (cumulativeDistance + dist >= distance)
@@ -64,7 +99,9 @@ namespace CustomShapeComparison
             return polyLine.Last();
         }
 
-        private static Point GetPointXDistanceAlongLine(Point p1, Point p2, double distance) => InterpolateBetweenTwoPoints(p1, p2, Math.Clamp(distance / p1.GetDistanceTo(p2),0.0,1.0));
+        private static Point GetPointXDistanceAlongLine(Point p1, Point p2, double distance) => p1 == p2
+            ? p1
+            : InterpolateBetweenTwoPoints(p1, p2, Math.Clamp(distance / p1.GetDistanceTo(p2), 0.0, 1.0));
 
         private static Point InterpolateBetweenTwoPoints(Point p1, Point p2, double amount) => amount switch
         {

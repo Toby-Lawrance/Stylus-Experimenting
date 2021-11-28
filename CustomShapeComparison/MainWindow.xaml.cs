@@ -24,7 +24,7 @@ namespace CombinedGestures
     public partial class MainWindow : Window
     {
 
-        private readonly IStrokeComparer comparer;
+        private readonly PointSimilarityComparer comparer;
 
         private IEnumerable<Point> square;
         private IEnumerable<Point> star;
@@ -34,7 +34,7 @@ namespace CombinedGestures
         {
             InitializeComponent();
 
-            comparer = new PointSimilarityComparer();
+            comparer = new PointSimilarityComparer(100,10.0);
             
             CreateShapes();
         }
@@ -85,29 +85,36 @@ namespace CombinedGestures
 
         private void DrawingCanvas_OnStrokeCollected(object sender, InkCanvasStrokeCollectedEventArgs e)
         {
-            var score = comparer.Compare(scaledSquare,e.Stroke.StylusPoints.Select(sp => new Point(sp.X, sp.Y)));
-            
-            CreateTextBlock($"Score: {score.score}", e.Stroke.StylusPoints.Last().X,e.Stroke.StylusPoints.Last().Y);
+            var pointedStroke = e.Stroke.StylusPoints.Select(sp => new Point(sp.X, sp.Y)).ToArray();
+            var (baseSample, compareSample) = comparer.GetSampledCurves(scaledSquare, pointedStroke);
+            baseSample = PointSimilarityComparer.TransformTo(baseSample, compareSample.First()).ToArray();
 
-            foreach (var (p1,p2) in score.sampled.Zip(score.sampled.Skip(1), (p1,p2) => (p1,p2)))
+            var score = comparer.Compare(scaledSquare,pointedStroke);
+            
+            CreateTextBlock($"Score: {score*100}%", e.Stroke.StylusPoints.Last().X,e.Stroke.StylusPoints.Last().Y);
+
+            foreach (var (p1,p2) in baseSample.Zip(compareSample,(p1,p2) => (p1,p2)))
             {
+                var distance = p1.GetDistanceTo(p2);
                 var l = new Line
                 {
-                    X1 = p1.Item1.X + e.Stroke.StylusPoints.First().X,
-                    X2 = p2.Item1.X + e.Stroke.StylusPoints.First().X,
-                    Y1 = p1.Item1.Y + e.Stroke.StylusPoints.First().Y,
-                    Y2 = p2.Item1.Y + e.Stroke.StylusPoints.First().Y,
-                    Stroke = p1.distance switch
+                    X1 = p1.X,
+                    X2 = p2.X,
+                    Y1 = p1.Y,
+                    Y2 = p2.Y,
+                    Stroke = distance switch
                     {
                         <= 5 => Brushes.Green,
                         <= 25 => Brushes.Orange,
                         <= 50 => Brushes.Yellow,
+                        <= 100 => Brushes.Purple,
                         _ => Brushes.Red
                     }
                 };
-
+                
                 DrawingCanvas.Children.Add(l);
             }
+            
             DrawingCanvas.Strokes.Remove(e.Stroke);
         }
 
